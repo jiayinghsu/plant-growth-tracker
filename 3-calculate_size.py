@@ -17,17 +17,12 @@ for filename in os.listdir(directory):
     print(filename)
     img = cv2.imread(os.path.join(directory, filename))
 
-    # convert to R G B for matplot
-    rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
     # convert into gray scale for detecting the contours i.e. outlines of each individual object
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    # show the image in GRAY
-    rgb_img = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
-
     # remove the excessive noise using THRESHOLD
     thresh, thresh_img = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
+    
     # show the image in THRESH
     rgb_img = cv2.cvtColor(thresh_img, cv2.COLOR_BGR2RGB)
 
@@ -132,8 +127,8 @@ for filename in os.listdir(directory):
     d[filename] = areas_sel
 
     # show the processed image with contours printed
-    # cv2.imshow("002", gray)
-    # cv2.waitKey(0)
+    cv2.imshow("002", gray)
+    cv2.waitKey(0)
 
 # print(d)
 df = pd.DataFrame(d)
