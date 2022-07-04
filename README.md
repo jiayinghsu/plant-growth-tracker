@@ -1,4 +1,4 @@
-# Plant pheotyping using computer vision
+# Tracking plant growth using computer vision
 Please use, cite, and contribute to Plant growth tracker (PGT)! If you have questions, please submit them via the [GitHub issue page](https://github.com/jiayinghsu/plant_growth_tracker/issues). 
 ***
 
