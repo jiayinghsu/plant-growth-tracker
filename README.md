@@ -1,1 +1,1 @@
-# plant_growth_tracker
+# Plant Growth Tracker
