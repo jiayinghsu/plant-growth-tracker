@@ -32,4 +32,4 @@ for filename in os.listdir(directory):
     cv2.waitKey(0)
 
     # save images
-    # cv2.imwrite(os.path.join(out, filename), filtered)
+    cv2.imwrite(os.path.join(out, filename), filtered)
