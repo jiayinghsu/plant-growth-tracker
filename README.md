@@ -12,6 +12,12 @@ PGT is an open-source pipeline for tracking plant's growth. PGT handles the prob
  - [1-Segment plants, plates and background in images](https://github.com/jiayinghsu/plant_growth_tracker/blob/main/1-segment_images.py)
  - [2-Remove backgrounds and standardize coordinates](https://github.com/jiayinghsu/plant_growth_tracker/blob/main/2-remove_bacgrounds_align_coordinates.py) 
  - [3-Analyze plant size and output csv files](https://github.com/jiayinghsu/plant_growth_tracker/blob/main/3-calculate_size.py)  
+ 
+ ## Code References
+
+ - https://docs.opencv.org/4.x/dd/d49/tutorial_py_contour_features.html
+ - https://stackoverflow.com/questions/57283802/remove-small-whits-dots-from-binary-image-using-opencv-python
+ - https://stackoverflow.com/questions/60780831/python-how-to-cut-out-an-area-with-specific-color-from-image-opencv-numpy
 
 ## Issues 
 
