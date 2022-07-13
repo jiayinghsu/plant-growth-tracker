@@ -7,11 +7,16 @@ from skimage.filters import threshold_otsu
 import os
 
 # Load image
-date = '7-3-2022'
+date = '7-12-2022'
 directory = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/converted'
 out = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/prep'
 
+filenames = []
 for filename in os.listdir(directory):
+    if filename != '.DS_Store':
+        filenames.append(filename)
+
+for filename in filenames:
     img = cv2.imread(os.path.join(directory, filename))
 
     img_rgb=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
@@ -28,8 +33,11 @@ for filename in os.listdir(directory):
     filtered = filter_image(img, img_otsu)
 
     # show images
-    cv2.imshow("Image", img_gray)
-    cv2.waitKey(0)
+    # cv2.imshow("Image", img_gray)
+    # cv2.waitKey(0)
 
     # save images
     cv2.imwrite(os.path.join(out, filename), filtered)
+
+
+

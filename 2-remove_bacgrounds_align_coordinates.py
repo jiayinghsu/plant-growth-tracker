@@ -3,14 +3,21 @@ import numpy as np
 import os
 
 # Load image
-date = '7-3-2022'
+date = '7-12-2022'
 directory = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/prep'
 out1 = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/cropped'
 out2 = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/final'
 
+filenames = []
 for filename in os.listdir(directory):
+    if filename != '.DS_Store':
+        filenames.append(filename)
+
+for filename in filenames:
     img = cv2.imread(os.path.join(directory, filename))
     print(img.shape)
+
+    img = img[150:3500, 210:2900]
 
     blurred = cv2.blur(img, (3, 3))
     canny = cv2.Canny(blurred, 100, 200)
@@ -45,14 +52,14 @@ for filename in os.listdir(directory):
     print(cropped.shape)
 
     # save images
-    # cv2.imwrite(os.path.join(out1, filename), cropped)
+    cv2.imwrite(os.path.join(out1, filename), cropped)
 
     # remove handwritings and edges
     cropped = cropped[130:1900, 350:1840]
 
     # show images
-    cv2.imshow("Image", cropped)
-    cv2.waitKey(0)
+    # cv2.imshow("Image", cropped)
+    # cv2.waitKey(0)
 
     # save images
     cv2.imwrite(os.path.join(out2, filename), cropped)
