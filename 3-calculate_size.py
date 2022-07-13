@@ -8,13 +8,17 @@ import os
 import pandas as pd
 
 # Load image
-date = '7-3-2022'
+date = '7-12-2022'
 directory = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/final'
 out = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date
 
 d = {}
+filenames = []
 for filename in os.listdir(directory):
-    print(filename)
+    if filename != '.DS_Store':
+        filenames.append(filename)
+
+for filename in filenames:
     img = cv2.imread(os.path.join(directory, filename))
 
     # convert into gray scale for detecting the contours i.e. outlines of each individual object
@@ -111,7 +115,7 @@ for filename in os.listdir(directory):
     areas = []
     for i in range(len(contours)):
         area = cv2.contourArea(contours[i])
-        if area < 4000:
+        if area < 2000:
             continue
         moments = cv2.moments(contours[i])
         centres.append((int(moments['m10']/(moments['m00']+0.1)), int(moments['m01']/(moments['m00']+0.1))))
@@ -120,20 +124,27 @@ for filename in os.listdir(directory):
         cv2.drawContours(gray, contours, -1, (255, 255, 255), 2)
 
     areas.sort()
-    # print(centres)
-    # print(areas[-4:])
     areas_sel = areas[-4:]
+
+    if len(areas_sel) == 1:
+        areas_sel.extend([0,0,0])
+    elif len(areas_sel) == 2:
+        areas_sel.extend([0, 0])
+    elif len(areas_sel) == 3:
+        areas_sel.append(0)
+
     areas_sel.append(sum(areas_sel) / len(areas_sel))
     d[filename] = areas_sel
 
-    # show the processed image with contours printed
-    cv2.imshow("002", gray)
-    cv2.waitKey(0)
+    # # show the processed image with contours printed
+    # cv2.imshow("002", gray)
+    # cv2.waitKey(0)
 
 # print(d)
 df = pd.DataFrame(d)
 df = df.T
 df.rename(columns={0:1, 1:2, 2:3, 3:4, 4:"Average"}, inplace=True)
+df['Date'] = date
 print(df)
 
 df.to_csv(os.path.join(out, date+'.csv'))
