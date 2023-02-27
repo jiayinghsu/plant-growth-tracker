@@ -24,8 +24,8 @@ PGT is an open-source pipeline for tracking plant's growth. PGT handles the prob
 
 ## Work in Progress
 
- -[ ] Segment 3D point clouds of plant organs such as leaves and stems to automate plant growth monitoring and quantify the strss levels the plant is experiencing.
- -[ ] Experiment with algorithms such as PointNet++, ASIS, SGPN, and PlantNet.
+ - [ ] Segment 3D point clouds of plant organs such as leaves and stems to automate plant growth monitoring and quantify the strss levels the plant is experiencing.
+ - [ ] Experiment with algorithms such as PointNet++, ASIS, SGPN, and PlantNet.
 
 
 ## Issues 
