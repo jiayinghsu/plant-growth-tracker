@@ -3,10 +3,10 @@ import cv2
 
 class options:
     def __init__(self):
-        self.image = "/Users/jiayingxu/ucsd/plant_growth_tracker/samples/col_1_25.png"
+        self.image = "~/samples/col_1_25.png"
         self.debug = "plot"
         self.writeimg = False
-        self.outdir = "/Users/jiayingxu/ucsd/plant_growth_tracker/results"
+        self.outdir = "~/results"
 
 # Get options
 args = options()
@@ -65,8 +65,8 @@ analysis_images = pcv.watershed_segmentation(rgb_img=crop_img, mask=mask, distan
 # and print an output text file for data analysis. The Outputs class stores data whenever any of the following functions
 # are ran: analyze_bound_horizontal, analyze_bound_vertical, analyze_color, analyze_nir_intensity, analyze_object,
 # fluor_fvfm, report_size_marker_area, watershed. If no functions have been run, it will print an empty text file
-pcv.outputs.save_results(filename='segmentation_tutorial_results.json')
+pcv.outputs.save_results(filename='segmentation_results.json')
 
 import pandas as pd
-pdObj = pd.read_json('segmentation_tutorial_results.json', orient="index")
+pdObj = pd.read_json('segmentation_results.json', orient="index")
 print(pdObj)

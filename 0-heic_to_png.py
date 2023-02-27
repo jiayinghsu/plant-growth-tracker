@@ -2,8 +2,9 @@ import os
 from PIL import Image
 import pillow_heif
 
-directory = '/Users/jiayingxu/Dropbox/Jiaying/data/7-12-2022/raw'
-out = '/Users/jiayingxu/Dropbox/Jiaying/data/7-12-2022/converted'
+date = '00-00-0000'
+directory = '~/data/' + date + 'raw'
+out = '~/data/' + date + 'converted'
 
 filenames = []
 for filename in os.listdir(directory):

@@ -3,10 +3,10 @@ import numpy as np
 import os
 
 # Load image
-date = '7-12-2022'
-directory = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/prep'
-out1 = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/cropped'
-out2 = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/final'
+date = '00-00-0000'
+directory = '~/data/' + date + '/prep'
+out1 = '~/data/' + date + '/cropped'
+out2 = '~/data/' + date + '/final'
 
 filenames = []
 for filename in os.listdir(directory):
@@ -56,10 +56,6 @@ for filename in filenames:
 
     # remove handwritings and edges
     cropped = cropped[130:1900, 350:1840]
-
-    # show images
-    # cv2.imshow("Image", cropped)
-    # cv2.waitKey(0)
 
     # save images
     cv2.imwrite(os.path.join(out2, filename), cropped)

@@ -7,9 +7,9 @@ from skimage.filters import threshold_otsu
 import os
 
 # Load image
-date = '7-12-2022'
-directory = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/converted'
-out = '/Users/jiayingxu/Dropbox/Jiaying/data/' + date + '/prep'
+date = '00-00-0000'
+directory = '~/data/' + date + '/converted'
+out = '~/data/' + date + '/prep'
 
 filenames = []
 for filename in os.listdir(directory):
@@ -31,11 +31,7 @@ for filename in filenames:
     thresh = threshold_otsu(img_gray)
     img_otsu  = img_gray < thresh
     filtered = filter_image(img, img_otsu)
-
-    # show images
-    # cv2.imshow("Image", img_gray)
-    # cv2.waitKey(0)
-
+    
     # save images
     cv2.imwrite(os.path.join(out, filename), filtered)
 

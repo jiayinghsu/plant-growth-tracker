@@ -25,7 +25,7 @@ from plantcv.plantcv import fatal_error
 ROOT_DIR = os.path.abspath("./")
 
 # Directory of library packages. Note: you will have to change this to the directory of your maskRCNN package
-LIB_DIR = '/Users/jiayingxu/ucsd/plant_growth_tracker/Mask_RCNN'
+LIB_DIR = '~/Mask_RCNN'
 import mrcnn.model as modellib
 from mrcnn import visualize
 from mrcnn.config import Config
