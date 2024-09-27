@@ -1,7 +1,3 @@
-**Instructions for Using the Plant Growth Tracker Package to Custom Train a Model and Run Inference on Individual Leaf Areas**
-
----
-
 # Plant Growth Tracker
 
 ## Overview
