@@ -10,7 +10,8 @@ from plant_growth_tracker.services.video_processor import (
 def process_images(
     image_folder_path: str,
     segmentation_type: str = 'total_plant_area',
-    preprocessing_function=None
+    preprocessing_function=None,
+    custom_model_paths: dict = None
 ):
     """
     Processes images in a folder and returns the results as a DataFrame.
@@ -19,6 +20,7 @@ def process_images(
         image_folder_path (str): Path to the folder containing images.
         segmentation_type (str): 'total_plant_area' or 'individual_leaf_area'.
         preprocessing_function (Callable): Optional preprocessing function.
+        custom_model_paths (dict): Optional paths for custom model and processor. Required if segmentation_type is 'individual_leaf_area'.
 
     Returns:
         pandas.DataFrame: DataFrame containing the results.
@@ -39,8 +41,10 @@ def process_images(
             image_paths, preprocessing_function
         )
     elif segmentation_type == 'individual_leaf_area':
+        if custom_model_paths is None:
+            raise ValueError("custom_model_paths must be provided for individual_leaf_area segmentation.")
         results = process_individual_leaf_area_images(
-            image_paths, preprocessing_function
+            image_paths, preprocessing_function, custom_model_paths
         )
     else:
         raise ValueError(f"Invalid segmentation_type: {segmentation_type}")
@@ -51,7 +55,8 @@ def process_images(
 def process_video(
     video_path: str,
     segmentation_type: str = 'total_plant_area',
-    preprocessing_function=None
+    preprocessing_function=None,
+    custom_model_paths: dict = None
 ):
     """
     Processes a video and returns the results as a DataFrame.
@@ -60,6 +65,7 @@ def process_video(
         video_path (str): Path to the video file.
         segmentation_type (str): 'total_plant_area' or 'individual_leaf_area'.
         preprocessing_function (Callable): Optional preprocessing function.
+        custom_model_paths (dict): Optional paths for custom model and processor. Required if segmentation_type is 'individual_leaf_area'.
 
     Returns:
         pandas.DataFrame: DataFrame containing the results.
@@ -71,8 +77,10 @@ def process_video(
             video_path, preprocessing_function
         )
     elif segmentation_type == 'individual_leaf_area':
+        if custom_model_paths is None:
+            raise ValueError("custom_model_paths must be provided for individual_leaf_area segmentation.")
         results = process_individual_leaf_area_video(
-            video_path, preprocessing_function
+            video_path, preprocessing_function, custom_model_paths
         )
     else:
         raise ValueError(f"Invalid segmentation_type: {segmentation_type}")

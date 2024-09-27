@@ -5,6 +5,7 @@ from plant_growth_tracker.services.segmentation import (
     segment_individual_leaves,
 )
 from plant_growth_tracker.core.utils import default_preprocess_frame
+import torch
 
 def process_total_plant_area_video(
     video_path: str,
@@ -46,6 +47,7 @@ def process_total_plant_area_video(
 def process_individual_leaf_area_video(
     video_path: str,
     preprocessing_function: Optional[Callable] = None,
+    custom_model_paths: dict = None,
 ) -> List[Dict[str, Any]]:
     """
     Processes a video to calculate individual leaf areas in each frame.
@@ -53,10 +55,22 @@ def process_individual_leaf_area_video(
     Args:
         video_path (str): Path to the video file.
         preprocessing_function (Callable): Optional preprocessing function.
+        custom_model_paths (dict): Dictionary containing 'model_path' and 'processor_path'.
 
     Returns:
         List[Dict[str, Any]]: List of results for each frame, plant, and leaf.
     """
+    if custom_model_paths is None:
+        raise ValueError("custom_model_paths must be provided for individual leaf area processing.")
+
+    from plant_growth_tracker.models.custom_model import CustomSAMModel
+    # Initialize the custom SAM model
+    custom_sam_model = CustomSAMModel(
+        model_path=custom_model_paths['model_path'],
+        processor_path=custom_model_paths['processor_path'],
+        device='cuda' if torch.cuda.is_available() else 'cpu'
+    )
+
     cap = cv2.VideoCapture(video_path)
     results = []
     frame_number = 0
@@ -69,7 +83,7 @@ def process_individual_leaf_area_video(
             preprocessed_frame = preprocessing_function(frame)
         else:
             preprocessed_frame = default_preprocess_frame(frame)
-        plants = segment_individual_leaves(preprocessed_frame)
+        plants = segment_individual_leaves(preprocessed_frame, custom_sam_model)
         for plant in plants:
             for leaf in plant.leaves:
                 result = {

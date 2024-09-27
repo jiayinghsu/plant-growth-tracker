@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Optional, Callable
 import os
+import torch
 from plant_growth_tracker.services.segmentation import (
     segment_total_plant_area,
     segment_individual_leaves,
@@ -40,17 +41,30 @@ def process_total_plant_area_images(
 def process_individual_leaf_area_images(
     image_paths: List[str],
     preprocessing_function: Optional[Callable] = None,
+    custom_model_paths: dict = None,
 ) -> List[Dict[str, Any]]:
     """
-    Processes images to calculate individual leaf areas.
+    Processes images to calculate individual leaf areas using the custom SAM model.
 
     Args:
         image_paths (List[str]): List of image file paths.
         preprocessing_function (Callable): Optional preprocessing function.
+        custom_model_paths (dict): Dictionary containing 'model_path' and 'processor_path'.
 
     Returns:
         List[Dict[str, Any]]: List of results for each leaf.
     """
+    if custom_model_paths is None:
+        raise ValueError("custom_model_paths must be provided for individual leaf area processing.")
+
+    from plant_growth_tracker.models.custom_model import CustomSAMModel
+    # Initialize the custom SAM model
+    custom_sam_model = CustomSAMModel(
+        model_path=custom_model_paths['model_path'],
+        processor_path=custom_model_paths['processor_path'],
+        device='cuda' if torch.cuda.is_available() else 'cpu'
+    )
+
     results = []
     for image_path in image_paths:
         image = load_image(image_path)
@@ -58,7 +72,7 @@ def process_individual_leaf_area_images(
             image = preprocessing_function(image)
         else:
             image = default_preprocess_image(image)
-        plants = segment_individual_leaves(image)
+        plants = segment_individual_leaves(image, custom_sam_model)
         for plant in plants:
             for leaf in plant.leaves:
                 result = {

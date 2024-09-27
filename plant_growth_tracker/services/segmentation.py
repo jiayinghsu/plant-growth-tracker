@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from typing import List
 from plant_growth_tracker.models.schemas import Plant, Leaf
+from plant_growth_tracker.models.custom_model import CustomSAMModel
 
 def segment_total_plant_area(image: np.ndarray) -> List[Plant]:
     """
@@ -36,52 +37,38 @@ def segment_total_plant_area(image: np.ndarray) -> List[Plant]:
         plants.append(plant)
     return plants
 
-def segment_individual_leaves(image: np.ndarray) -> List[Plant]:
+def segment_individual_leaves(image: np.ndarray, custom_sam_model: CustomSAMModel) -> List[Plant]:
     """
-    Segment the image to find individual leaves and calculate their areas.
+    Segment the image using the custom SAM model to find individual leaves.
 
     Args:
         image (np.ndarray): The preprocessed image.
+        custom_sam_model (CustomSAMModel): An instance of the custom trained SAM model.
 
     Returns:
         List[Plant]: List of Plant objects with associated leaves.
     """
-    # First, segment the plants
-    plants = segment_total_plant_area(image)
-    
-    # Create a mask for each plant and segment leaves within it
-    for plant in plants:
-        # For simplicity, use the entire image as the mask
-        mask = np.zeros(image.shape[:2], dtype=np.uint8)
-        # Create a binary mask where plant pixels are 255
-        gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-        _, binary = cv2.threshold(gray, 1, 255, cv2.THRESH_BINARY)
-        mask = binary.copy()
-        
-        # Apply the mask to the image
-        plant_image = cv2.bitwise_and(image, image, mask=mask)
-        
-        # Convert to grayscale
-        gray_plant = cv2.cvtColor(plant_image, cv2.COLOR_RGB2GRAY)
-        
-        # Edge detection for leaf segmentation
-        edges = cv2.Canny(gray_plant, 50, 150)
-        
-        # Dilate edges to close gaps
-        kernel = np.ones((3, 3), np.uint8)
-        edges = cv2.dilate(edges, kernel, iterations=1)
-        
-        # Find contours of leaves
+    # Predict masks using the custom model
+    masks = custom_sam_model.predict(image)  # Shape: (batch_size, num_masks, H, W)
+
+    # Assuming batch_size is 1
+    masks = masks[0]  # Shape: (num_masks, H, W)
+
+    leaves = []
+    for idx, mask in enumerate(masks):
+        # Convert mask to uint8
+        mask_uint8 = (mask * 255).astype(np.uint8)
+        # Find contours
         contours, _ = cv2.findContours(
-            edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+            mask_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
         )
-        
-        leaves = []
-        for leaf_idx, contour in enumerate(contours):
+        for contour in contours:
             leaf_area = cv2.contourArea(contour)
             if leaf_area < 500:  # Adjust threshold as needed
                 continue
-            leaf = Leaf(leaf_id=leaf_idx + 1, leaf_area=leaf_area)
+            leaf = Leaf(leaf_id=len(leaves) + 1, leaf_area=leaf_area)
             leaves.append(leaf)
-        plant.leaves = leaves
-    return plants
+
+    # Create a single Plant object since we are focusing on leaves
+    plant = Plant(plant_id=1, plant_area=sum([leaf.leaf_area for leaf in leaves]), leaves=leaves)
+    return [plant]
