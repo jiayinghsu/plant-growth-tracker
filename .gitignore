@@ -4,6 +4,7 @@ __pycache__/
 # Virtual environment
 env/
 venv/
+3nv/
 # Distribution / packaging
 build/
 dist/
