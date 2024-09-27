@@ -1,15 +1,25 @@
 from typing import List, Dict, Any, Optional, Callable
-from .segmentation import (
+import os
+from plant_growth_tracker.services.segmentation import (
     segment_total_plant_area,
     segment_individual_leaves,
 )
-from ..core.utils import load_image, default_preprocess_image
-import os
+from plant_growth_tracker.core.utils import load_image, default_preprocess_image
 
 def process_total_plant_area_images(
     image_paths: List[str],
     preprocessing_function: Optional[Callable] = None,
 ) -> List[Dict[str, Any]]:
+    """
+    Processes images to calculate total plant area.
+
+    Args:
+        image_paths (List[str]): List of image file paths.
+        preprocessing_function (Callable): Optional preprocessing function.
+
+    Returns:
+        List[Dict[str, Any]]: List of results for each plant.
+    """
     results = []
     for image_path in image_paths:
         image = load_image(image_path)
@@ -31,6 +41,16 @@ def process_individual_leaf_area_images(
     image_paths: List[str],
     preprocessing_function: Optional[Callable] = None,
 ) -> List[Dict[str, Any]]:
+    """
+    Processes images to calculate individual leaf areas.
+
+    Args:
+        image_paths (List[str]): List of image file paths.
+        preprocessing_function (Callable): Optional preprocessing function.
+
+    Returns:
+        List[Dict[str, Any]]: List of results for each leaf.
+    """
     results = []
     for image_path in image_paths:
         image = load_image(image_path)

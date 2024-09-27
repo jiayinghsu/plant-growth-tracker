@@ -1,8 +1,8 @@
-import os
+import cv2
+import numpy as np
 from PIL import Image
 import pillow_heif
-import numpy as np
-import cv2
+from skimage.filters import threshold_otsu
 
 def load_image(image_path: str) -> np.ndarray:
     """
@@ -32,7 +32,14 @@ def load_image(image_path: str) -> np.ndarray:
 
 def default_preprocess_image(image: np.ndarray) -> np.ndarray:
     """
-    Default preprocessing for images (e.g., resizing, normalization).
+    Default preprocessing for images:
+    - Convert to RGB if needed
+    - Convert to grayscale
+    - Perform Otsu's thresholding to create a binary mask
+    - Remove background using the mask
+    - Remove small objects/noise
+    - Find bounding box of significant regions and crop the image
+    - Resize the image to a standard size
 
     Args:
         image (np.ndarray): The input image.
@@ -40,13 +47,46 @@ def default_preprocess_image(image: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: The preprocessed image.
     """
-    # Default preprocessing steps
-    # Convert to RGB if not already
+    # Step 1: Convert to RGB if needed
     if len(image.shape) == 2 or image.shape[2] != 3:
         image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB)
-    # Resize image if needed
-    # image = cv2.resize(image, (desired_width, desired_height))
-    return image
+    
+    # Step 2: Convert to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    
+    # Step 3: Apply Otsu's thresholding
+    thresh_value = threshold_otsu(gray)
+    binary_mask = gray < thresh_value  # Invert if plant is darker than background
+    
+    # Step 4: Remove small objects/noise
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(
+        binary_mask.astype(np.uint8), connectivity=8
+    )
+    min_area = 1000  # Minimum area threshold; adjust based on your images
+    filtered_mask = np.zeros_like(binary_mask)
+    for i in range(1, num_labels):  # Skip background label 0
+        area = stats[i, cv2.CC_STAT_AREA]
+        if area >= min_area:
+            filtered_mask[labels == i] = True
+    
+    # Step 5: Apply the filtered mask to the image
+    filtered_image = image.copy()
+    filtered_image[~filtered_mask] = 0  # Set background pixels to zero
+    
+    # Step 6: Find bounding box of significant regions and crop the image
+    coords = cv2.findNonZero(filtered_mask.astype(np.uint8))
+    if coords is not None:
+        x, y, w, h = cv2.boundingRect(coords)
+        cropped_image = filtered_image[y:y+h, x:x+w]
+    else:
+        # If no significant regions are found, return the original image
+        cropped_image = filtered_image
+    
+    # Step 7: Resize the image to a standard size
+    desired_size = (2000, 2000)
+    resized_image = cv2.resize(cropped_image, desired_size, interpolation=cv2.INTER_LINEAR)
+    
+    return resized_image
 
 def default_preprocess_frame(frame: np.ndarray) -> np.ndarray:
     """
@@ -58,7 +98,5 @@ def default_preprocess_frame(frame: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: The preprocessed frame.
     """
-    # Default preprocessing steps
-    # Convert to RGB if needed
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    return frame
+    # Use the same preprocessing as for images
+    return default_preprocess_image(frame)
