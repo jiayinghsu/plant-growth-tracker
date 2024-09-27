@@ -1,21 +1,18 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-
 # Virtual environment
 env/
 venv/
-
-# Data files
-data/input/
-data/output/
-data/temp/
-
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
 # OS files
 .DS_Store
-
 # Logs
 *.log
-
-# Environment variables
-.env
+# Test results
+.pytest_cache/
+# Data
+data/

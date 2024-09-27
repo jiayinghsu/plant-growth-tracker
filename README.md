@@ -1,29 +1,49 @@
-# Plant Growth Tracker
+## Customizing Preprocessing
 
-An API for segmenting plant leaf images and tracking plant growth over time.
+You can customize the preprocessing steps by providing your own preprocessing function. This function should accept an image (as a NumPy array) and return the preprocessed image.
 
-## Overview
+### Example 1: Using Default Preprocessing
+```python
+from plant_growth_tracker import process_images
 
-The **Plant Growth Tracker** is a FastAPI application that allows users to upload images and videos of plants to perform total plant area segmentation and individual leaf area segmentation. The results are returned in a format compatible with pandas DataFrames for easy data analysis.
+df = process_images(
+    image_folder_path='path/to/images',
+    segmentation_type='total_plant_area',
+)
+print(df)
+```
 
-## Features
+### Example 2: Skipping Preprocessing
+```python
+from plant_growth_tracker import process_images
 
-- **Total Plant Area Segmentation**: Calculate the total area of each plant in an image or video.
-- **Individual Leaf Area Segmentation**: Calculate the area of each leaf for each plant.
-- **Batch Processing**: Support for processing multiple images at once.
-- **Video Processing**: Extract frames from videos and perform segmentation.
+def no_preprocessing(image):
+    return image  # Return the image as-is
 
-## Installation
+df = process_images(
+    image_folder_path='path/to/images',
+    segmentation_type='total_plant_area',
+    preprocessing_function=no_preprocessing,
+)
+print(df)
+```
 
-### Prerequisites
+### Example 3: Using a Custom Preprocessing Function
 
-- Python 3.8 or higher
-- pip package manager
+```python
+from plant_growth_tracker import process_images
+import cv2
 
-### Steps
+def custom_preprocessing(image):
+    # Convert to grayscale
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
+    # Apply Gaussian blur
+    image = cv2.GaussianBlur(image, (5, 5), 0)
+    return image
 
-1. **Clone the Repository**
-
-   ```bash
-   git clone https://github.com/yourusername/plant-growth-tracker.git
-   cd plant-growth-tracker
+df = process_images(
+    image_folder_path='path/to/your/image_folder',
+    segmentation_type='total_plant_area',
+    preprocessing_function=custom_preprocessing,
+)
+```
