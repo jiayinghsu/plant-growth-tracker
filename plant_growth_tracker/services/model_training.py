@@ -5,7 +5,6 @@ from torchvision import transforms
 from PIL import Image
 from transformers import SamProcessor, SamModel
 from tqdm.auto import tqdm
-from transformers import SamProcessor, SamModel
 from torch.optim import Adam
 from torch.nn import BCEWithLogitsLoss
 
