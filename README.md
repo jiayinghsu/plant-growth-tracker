@@ -278,12 +278,6 @@ python tests/test_package.py
   - **CSV File**: `tests/output/plant_area_results.csv` containing the analysis results.
   - **Visualizations**: Saved in the `tests/output/visualizations/` directory, showcasing preprocessing steps and detected contours.
 
-> **Example Command:**
-
-```bash
-python tests/test_package.py
-```
-
 ---
 
 ## Additional Notes
