@@ -1,5 +1,3 @@
-# setup.py
-
 from setuptools import setup, find_packages
 
 setup(
@@ -15,13 +13,21 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'opencv-python',
-        'numpy',
+        'fastapi',
+        'uvicorn[standard]',
+        'opencv-python==4.7.0.72',
+        'numpy==1.24.4',
         'pandas',
         'pydantic',
+        'torch==2.0.1',
+        'torchvision==0.15.2',
         'pillow',
-        'pillow_heif',
+        'pillow-heif',
         'scikit-image',
+        'transformers',
+        'tqdm',
+        'matplotlib',
+        'segment-anything @ git+https://github.com/facebookresearch/segment-anything.git@main#egg=segment-anything',
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

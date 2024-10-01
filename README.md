@@ -14,12 +14,14 @@ The **Plant Growth Tracker** is a Python package designed to help researchers an
   - [Processing Images](#processing-images)
     - [Total Plant Area](#total-plant-area)
     - [Individual Leaf Area](#individual-leaf-area)
+  - [Custom Preprocessing](#custom-preprocessing)
   - [Training a Custom Model](#training-a-custom-model)
     - [Preparing Your Dataset](#preparing-your-dataset)
     - [Training Procedure](#training-procedure)
   - [Using the Custom Trained Model](#using-the-custom-trained-model)
+  - [Running Custom Analysis](#running-custom-analysis)
 - [Additional Notes](#additional-notes)
-- [Contributing](#contributing)
+- [Publication](#publication)
 - [License](#license)
 
 ---
@@ -29,6 +31,7 @@ The **Plant Growth Tracker** is a Python package designed to help researchers an
 - **Total Plant Area Calculation**: Process images or videos to calculate the total area occupied by plants.
 - **Individual Leaf Area Calculation**: Segment individual leaves and calculate their areas using a custom-trained model.
 - **Custom Model Training**: Train a custom segmentation model using your own dataset for improved accuracy.
+- **Custom Preprocessing**: Apply custom preprocessing steps to enhance image quality before analysis.
 
 ---
 
@@ -47,17 +50,20 @@ The **Plant Growth Tracker** is a Python package designed to help researchers an
   **`requirements.txt`**:
 
   ```text
-  numpy
+  fastapi
+  uvicorn[standard]
+  opencv-python==4.7.0.72
+  numpy==1.24.4
   pandas
-  opencv-python
   pydantic
+  torch==2.0.1
+  torchvision==0.15.2
   pillow
   pillow-heif
-  scikit-image
-  torch
-  torchvision
+  scikit-image 
   transformers
   tqdm
+  matplotlib
   git+https://github.com/facebookresearch/segment-anything.git
   ```
 
@@ -83,11 +89,13 @@ pip install plant-growth-tracker
    cd plant-growth-tracker
    ```
 
-3. **Install the Package**:
+3. **Install the Package in Editable Mode**:
 
    ```bash
-   pip install .
+   pip install -e .
    ```
+
+   > **Note:** Installing in editable mode (`-e`) allows you to make changes to the source code without reinstalling the package.
 
 ---
 
@@ -138,6 +146,30 @@ print(df)
 df.to_csv('individual_leaf_area_results.csv', index=False)
 ```
 
+### Custom Preprocessing
+
+Before processing images, you can apply custom preprocessing steps to enhance image quality. This is particularly useful for improving segmentation accuracy.
+
+#### Using Custom Preprocessing
+
+```python
+from plant_growth_tracker import process_images, custom_preprocess
+
+image_folder_path = 'path/to/your/image_folder'
+
+df = process_images(
+    image_folder_path=image_folder_path,
+    segmentation_type='total_plant_area',
+    preprocessing_function=custom_preprocess  # Apply custom preprocessing
+)
+
+# Save or print the results
+print(df)
+df.to_csv('total_plant_area_results_custom.csv', index=False)
+```
+
+> **Note:** The `custom_preprocess` function allows you to define and apply your own image preprocessing pipeline. Refer to the [Custom Preprocessing](#custom-preprocessing) section for more details.
+
 ### Training a Custom Model
 
 #### Preparing Your Dataset
@@ -168,6 +200,7 @@ dataset/
 
    ```python
    from plant_growth_tracker.services.model_training import train_custom_model
+   import torch
 
    images_dir = 'dataset/images'
    masks_dir = 'dataset/masks'
@@ -232,6 +265,25 @@ df.to_csv('individual_leaf_area_results.csv', index=False)
 - **`custom_model_paths`**: Dictionary containing the paths to your trained model and processor.
 - **Output**: The `process_images` function returns a pandas DataFrame with the results.
 
+### Running Custom Analysis
+
+To perform a custom analysis using the package, execute the `test_package.py` script from your terminal:
+
+```bash
+python tests/test_package.py
+```
+
+- **Description**: This script runs custom preprocessing and model analysis on your dataset, generating results and visualizations.
+- **Output**:
+  - **CSV File**: `tests/output/plant_area_results.csv` containing the analysis results.
+  - **Visualizations**: Saved in the `tests/output/visualizations/` directory, showcasing preprocessing steps and detected contours.
+
+> **Example Command:**
+
+```bash
+python tests/test_package.py
+```
+
 ---
 
 ## Additional Notes
@@ -249,35 +301,17 @@ df.to_csv('individual_leaf_area_results.csv', index=False)
 
 ---
 
-## Contributing
+## Publication
 
-Contributions are welcome! Please follow these steps:
+This tool package has been utilized in the following publication:
 
-1. **Fork the Repository**: Click on the 'Fork' button at the top right of the repository page.
+- **Arabidopsis transcriptome responses to low water potential using high-throughput plate assays**
 
-2. **Clone Your Fork**:
+  *[Link to the paper](https://elifesciences.org/articles/84747)*
 
-   ```bash
-   git clone https://github.com/yourusername/plant-growth-tracker.git
-   ```
-
-3. **Create a New Branch**:
-
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-4. **Make Your Changes**: Implement your feature or fix.
-
-5. **Commit and Push**:
-
-   ```bash
-   git add .
-   git commit -m "Description of your changes"
-   git push origin feature/your-feature-name
-   ```
-
-6. **Submit a Pull Request**: Go to the original repository and click on 'New Pull Request'.
+  > **Citation:**
+  >
+  > Gonzalez, S., Swift, J., Yaaran, A., Xu, J., Miller, C., Illouz-Eliaz, N., Nery, J. R., Busch, W., Zait, Y., & Ecker, J. R. (2023). *Arabidopsis transcriptome responses to low water potential using high-throughput plate assays*. eLife, 12, e84747. [https://doi.org/10.7554/eLife.84747](https://doi.org/10.7554/eLife.84747)
 
 ---
 
