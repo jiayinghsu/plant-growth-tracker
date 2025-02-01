@@ -17,8 +17,11 @@ The **Plant Growth Tracker** is a Python package designed to help researchers an
   - [Custom Preprocessing](#custom-preprocessing)
   - [Training a Custom Model](#training-a-custom-model)
     - [Preparing Your Dataset](#preparing-your-dataset)
+    - [Data Preparation for Training](#data-preparation-for-training)
     - [Training Procedure](#training-procedure)
-  - [Using the Custom Trained Model](#using-the-custom-trained-model)
+  - [Running Inference with the Custom Trained Model](#running-inference-with-the-custom-trained-model)
+    - [Overlay Inference Use Case](#overlay-inference-use-case)
+    - [CSV Inference Use Case](#csv-inference-use-case)
   - [Running Custom Analysis](#running-custom-analysis)
 - [Additional Notes](#additional-notes)
 - [Publication](#publication)
@@ -47,7 +50,7 @@ The **Plant Growth Tracker** is a Python package designed to help researchers an
   pip install -r requirements.txt
   ```
 
-  **`requirements.txt`**:
+  **Example `requirements.txt`:**
 
   ```text
   fastapi
@@ -80,7 +83,7 @@ pip install plant-growth-tracker
 1. **Clone the Repository**:
 
    ```bash
-   git clone https://github.com/yourusername/plant-growth-tracker.git
+   git clone https://github.com/jiayinghsu/plant-growth-tracker.git
    ```
 
 2. **Navigate to the Project Directory**:
@@ -96,6 +99,46 @@ pip install plant-growth-tracker
    ```
 
    > **Note:** Installing in editable mode (`-e`) allows you to make changes to the source code without reinstalling the package.
+
+---
+
+## Repository Structure
+
+An example of the repository layout is:
+
+```
+plant-growth-tracker
+├── LICENSE
+├── MANIFEST.in
+├── README.md
+├── plant_growth_tracker
+│   ├── __init__.py
+│   ├── core
+│   │   ├── __init__.py
+│   │   └── utils.py
+│   ├── models
+│   │   ├── __init__.py
+│   │   ├── custom_model.py
+│   │   └── schemas.py
+│   └── services
+│       ├── __init__.py
+│       ├── data_prep.py           
+│       ├── image_processor.py
+│       ├── model_training.py      
+│       ├── segmentation.py
+│       └── video_processor.py
+├── use_cases
+│   ├── __init__.py              
+│   ├── inference_folder.py      # Inference: overlay segmentation on images
+│   └── inference_to_csv.py      # Inference: output CSV summary of segmentation results
+├── pyproject.toml
+├── requirements.txt
+├── setup.py
+└── tests
+    ├── __init__.py
+    ├── test_package.py
+    └── test_script.py
+```
 
 ---
 
@@ -117,14 +160,13 @@ df = process_images(
     segmentation_type='total_plant_area'
 )
 
-# Save or print the results
 print(df)
 df.to_csv('total_plant_area_results.csv', index=False)
 ```
 
 #### Individual Leaf Area
 
-To calculate individual leaf areas, you need to train a custom model first (see [Training a Custom Model](#training-a-custom-model)). Once you have a trained model, use it as follows:
+To calculate individual leaf areas, you may need to first train a custom model (see below). Once you have a trained model, use it as follows:
 
 ```python
 from plant_growth_tracker import process_images
@@ -141,16 +183,13 @@ df = process_images(
     custom_model_paths=custom_model_paths
 )
 
-# Save or print the results
 print(df)
 df.to_csv('individual_leaf_area_results.csv', index=False)
 ```
 
 ### Custom Preprocessing
 
-Before processing images, you can apply custom preprocessing steps to enhance image quality. This is particularly useful for improving segmentation accuracy.
-
-#### Using Custom Preprocessing
+Apply custom preprocessing steps before analysis to improve segmentation accuracy:
 
 ```python
 from plant_growth_tracker import process_images, custom_preprocess
@@ -160,21 +199,20 @@ image_folder_path = 'path/to/your/image_folder'
 df = process_images(
     image_folder_path=image_folder_path,
     segmentation_type='total_plant_area',
-    preprocessing_function=custom_preprocess  # Apply custom preprocessing
+    preprocessing_function=custom_preprocess
 )
 
-# Save or print the results
 print(df)
 df.to_csv('total_plant_area_results_custom.csv', index=False)
 ```
 
-> **Note:** The `custom_preprocess` function allows you to define and apply your own image preprocessing pipeline. Refer to the [Custom Preprocessing](#custom-preprocessing) section for more details.
+---
 
-### Training a Custom Model
+## Training a Custom Model
 
-#### Preparing Your Dataset
+### Preparing Your Dataset
 
-Organize your images and corresponding masks in separate directories:
+Organize your dataset as follows:
 
 ```
 dataset/
@@ -188,110 +226,145 @@ dataset/
     └── ...
 ```
 
-- **Images**: Place all your training images in the `images` directory.
-- **Masks**: Create binary masks for each image where the leaves are white (pixel value 255) and the background is black (pixel value 0).
-- **Naming Convention**: Ensure that each mask filename corresponds exactly to its image filename (e.g., `image1.jpg` and `image1.png`).
+- **Images**: Place all training images in the `images` directory.
+- **Masks**: Create binary masks for each image (leaves in white, background in black).
+- **Naming Convention**: Each mask file should correspond to its image (e.g., `image1.jpg` and `image1.png`).
 
-#### Training Procedure
+### Data Preparation for Training
+
+Run the data preparation script to convert COCO-style annotations into masks and generate JSON files:
+
+```bash
+python plant_growth_tracker/services/data_prep.py \
+    --ann_json /path/to/annotations.json \
+    --images_dir /path/to/images_folder \
+    --masks_dir /path/to/output_masks \
+    --output_dir /path/to/output_json \
+    --test_size 0.2
+```
+
+**Expected Output:**
+
+- Mask images saved in the specified `masks_dir`.
+- Two JSON files (`train_data.json` and `test_data.json`) in the specified `output_dir`.
+
+### Training Procedure
 
 1. **Create a Training Script**
 
-   Create a Python script named `train_model.py`:
-
-   ```python
-   from plant_growth_tracker.services.model_training import train_custom_model
-   import torch
-
-   images_dir = 'dataset/images'
-   masks_dir = 'dataset/masks'
-   model_save_path = 'trained_model'
-   processor_save_path = 'trained_processor'
-
-   train_custom_model(
-       images_dir=images_dir,
-       masks_dir=masks_dir,
-       model_save_path=model_save_path,
-       processor_save_path=processor_save_path,
-       num_epochs=10,
-       batch_size=2,
-       learning_rate=1e-5,
-       device='cuda' if torch.cuda.is_available() else 'cpu'
-   )
-   ```
-
-2. **Run the Training Script**
-
-   Execute the script:
+   You can directly run the training script located at `plant_growth_tracker/services/model_training.py`. For example, from your terminal run:
 
    ```bash
-   python train_model.py
+   python plant_growth_tracker/services/model_training.py \
+       --train_data /path/to/output_json/train_data.json \
+       --sam2_checkpoint /path/to/sam2_hiera_small.pt \
+       --model_cfg /path/to/sam2_hiera_s.yaml \
+       --no_of_steps 3000 \
+       --fine_tuned_model_name fine_tuned_sam2 \
+       --lr 0.0001 \
+       --accumulation_steps 4 \
+       --device cuda
    ```
 
-   - **Parameters**:
-     - `num_epochs`: Number of times the entire dataset is passed through the model.
-     - `batch_size`: Number of samples processed before the model is updated.
-     - `learning_rate`: Step size at each iteration while moving toward a minimum of a loss function.
-     - `device`: Specify `'cuda'` for GPU acceleration or `'cpu'` for CPU.
+   **Parameters:**
 
-3. **Monitor Training**
+   - `--train_data`: Path to your `train_data.json`
+   - `--sam2_checkpoint`: SAM2 checkpoint file path
+   - `--model_cfg`: SAM2 configuration file path
+   - `--no_of_steps`: Number of training steps
+   - `--fine_tuned_model_name`: Prefix for saved checkpoints
+   - `--lr`: Learning rate
+   - `--accumulation_steps`: Gradient accumulation steps
+   - `--device`: `'cuda'` for GPU or `'cpu'`
 
-   - The script will output the training loss after each epoch.
-   - Adjust parameters based on the training performance and available computational resources.
+2. **Monitor Training**
 
-### Using the Custom Trained Model
+   - The script prints training loss and saves checkpoints periodically.
+   - Adjust parameters based on your dataset and available hardware.
 
-After training, use your custom model to process new images:
+---
 
-```python
-from plant_growth_tracker import process_images
+## Running Inference with the Custom Trained Model
 
-image_folder_path = 'path/to/new/images'
-custom_model_paths = {
-    'model_path': 'trained_model',
-    'processor_path': 'trained_processor'
-}
+After training, use your fine-tuned model to perform inference on new images. Two use cases are provided in the **use_cases** folder.
 
-df = process_images(
-    image_folder_path=image_folder_path,
-    segmentation_type='individual_leaf_area',
-    custom_model_paths=custom_model_paths
-)
+### Overlay Inference Use Case
 
-# Save or print the results
-print(df)
-df.to_csv('individual_leaf_area_results.csv', index=False)
+This script overlays predicted segmentation masks (with instance IDs) on input images and saves the results.
+
+Run the script with:
+
+```bash
+python use_cases/inference_folder.py \
+  --images_dir /path/to/input_images \
+  --output_dir /path/to/output_overlays \
+  --sam2_checkpoint /path/to/sam2_hiera_small.pt \
+  --model_cfg /path/to/sam2_hiera_s.yaml \
+  --fine_tuned_model_weights /path/to/fine_tuned_sam2_1000.torch \
+  --num_points 30 --device cuda
 ```
 
-- **`custom_model_paths`**: Dictionary containing the paths to your trained model and processor.
-- **Output**: The `process_images` function returns a pandas DataFrame with the results.
+**Expected Output:**
 
-### Running Custom Analysis
+- Processed images with overlaid segmentation masks are saved in the specified output directory.
 
-To perform a custom analysis using the package, execute the `test_package.py` script from your terminal:
+### CSV Inference Use Case
+
+This script processes images and outputs a CSV file summarizing each detected leaf's properties (instance ID, image origin, class, area, centroid).
+
+Run the script with:
+
+```bash
+python use_cases/inference_to_csv.py \
+  --images_dir /path/to/input_images \
+  --output_csv /path/to/results.csv \
+  --sam2_checkpoint /path/to/sam2_hiera_small.pt \
+  --model_cfg /path/to/sam2_hiera_s.yaml \
+  --fine_tuned_model_weights /path/to/fine_tuned_sam2_1000.torch \
+  --num_points 30 --device cuda
+```
+
+**Expected Output:**
+
+- A CSV file (e.g., `results.csv`) listing for each image:
+  - **Object ID**: Instance number (restarts at 1 for each image)
+  - **Image origin**: Filename of the image
+  - **Class**: Fixed as `"leaf"`
+  - **Area**: Number of pixels in the detected instance
+  - **X Position** and **Y Position**: Centroid coordinates
+
+---
+
+## Running Custom Analysis
+
+To run a custom analysis using the package, execute the test script:
 
 ```bash
 python tests/test_package.py
 ```
 
-- **Description**: This script runs custom preprocessing and model analysis on your dataset, generating results and visualizations.
-- **Output**:
-  - **CSV File**: `tests/output/plant_area_results.csv` containing the analysis results.
-  - **Visualizations**: Saved in the `tests/output/visualizations/` directory, showcasing preprocessing steps and detected contours.
+- **Description:**  
+  This script applies custom preprocessing and analysis, generating visualizations and CSV outputs in the `tests/output/` directory.
 
 ---
 
 ## Additional Notes
 
-- **GPU Recommendation**: For training and inference on large datasets, a GPU is highly recommended to speed up processing.
-- **Data Quality**: The accuracy of the segmentation depends on the quality of your training data. Ensure masks are accurately annotated.
-- **Parameter Adjustment**: You may need to adjust thresholds and parameters in the code to suit your specific dataset.
-- **Dependencies**: Ensure all required packages are installed. Use:
+- **GPU Recommendation:**  
+  A GPU is highly recommended for training and inference on large datasets.
+- **Data Quality:**  
+  The accuracy of segmentation depends on high-quality, accurately annotated masks.
+- **Parameter Adjustment:**  
+  You may need to adjust thresholds and hyperparameters to suit your dataset.
+- **Dependencies:**  
+  Ensure all required packages are installed via:
 
   ```bash
   pip install -r requirements.txt
   ```
 
-- **Error Handling**: The package includes basic error handling. If you encounter issues, please check that all file paths and parameters are correct.
+- **Error Handling:**  
+  Basic error handling is implemented. Verify all file paths and parameter values if issues arise.
 
 ---
 
