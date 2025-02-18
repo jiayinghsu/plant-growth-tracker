@@ -150,8 +150,6 @@ Suppose you have an image named `sample_plant.jpg` in the input folder. After ru
 
 <img src="https://github.com/jiayinghsu/plant-growth-tracker/blob/main/examples/leaf_overlay.jpeg" width="400" alt="Example overlay" />
 
-*(Above is just a placeholder image; in your real usage, you’d see bounding boxes & masks for each detected plant/leaf.)*
-
 ---
 
 ## Running Inference with CSV Output
