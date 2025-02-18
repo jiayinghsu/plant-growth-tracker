@@ -148,7 +148,7 @@ Where:
 
 Suppose you have an image named `sample_plant.jpg` in the input folder. After running the script, you might see an output image like:
 
-<img src="https://via.placeholder.com/500x300.png?text=Example+Overlay" width="400" alt="Example overlay" />
+<img src="https://github.com/jiayinghsu/plant-growth-tracker/blob/main/examples/leaf_overlay.jpeg" width="400" alt="Example overlay" />
 
 *(Above is just a placeholder image; in your real usage, you’d see bounding boxes & masks for each detected plant/leaf.)*
 
